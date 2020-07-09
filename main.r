@@ -47,7 +47,7 @@ ggplot(data = BR_averages, aes(fill = `Drug Concentration`, x = `Time`, y = aver
   scale_fill_manual(breaks = c('Control', '0.1', '1', '10', '100','1000'), 
                     values = c('black', '#FF9999', '#FF6666', '#FF3333', '#FF0000','#990000'), 
                     name = 'Drug Concentration (nM)')+
-  scale_y_continuous(expand = c(0,0), limits = c(0,8))+  
+  scale_y_continuous(expand = c(0,0), limits = c(0,40))+  
   geom_errorbar(aes(ymin=average_beat_rate-stan_error_beat_rate, 
                     ymax=average_beat_rate+stan_error_beat_rate), 
                 width=.2, 
@@ -68,7 +68,7 @@ ggplot(data = BR_averages, aes(fill = `Drug Concentration`, x = `Time`, y = aver
 #ggplot argument creates plot with data
 #geombar() creates the bar plot
 #scale_fill_manual is where you can change colour and labels. to change colours use google to find R colour codes.
-#scale_y_continuous is used to place bars on the x axis
+#scale_y_continuous is used to place bars on the x axis. Also determines the axis scales - DONT FORGET TO SPECIFY Y AXIS.
 #geom_error_bar is where error bars are specified 
 #bbc_style is the graphics used
 #labs is labels and this is where you can change all the labels on the chart
