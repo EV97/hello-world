@@ -16,7 +16,7 @@ library(plotrix)
 #the head() function will give you a preview of the data set in the console, but use view() to see the whole set in a separate tab
 #data is where the data frame you are working with should go
 
-X2990_data_2 <- read_csv(data, col_types = cols(`Drug Concentration` = col_factor(levels = c("Control", "0.1", "1", "10", "100", "1000")), Time = col_factor(levels = c("0", "0.5", "3", "24", "36", "48", "72", "96", "120", "144"))), na = "null")
+data <- read_csv(data, col_types = cols(`Drug Concentration` = col_factor(levels = c("Control", "Varying", "Concentrations", "go", "here", "(make sure units are the same)")), Time = col_factor(levels = c("0", "Timepoints", "go", "here", "again", "keep", "same", "units", "120", "144"))), na = "null")
 na.omit(data)
 head(data)
 
