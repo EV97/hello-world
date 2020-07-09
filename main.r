@@ -10,40 +10,33 @@ library(tidyr)
 library(bbplot)
 library(plotrix)
 
+#create variables for data frame, different concs, different time points - must be same variables as in excel file
+pathofile <- "Data/dataframe.csv"
+concentraion <- c("Put","each","concentration","in","individual","quotaion","(keep units the same)")
+time_hours <- c("Put", "each", "time", "point")
+
 #read and analyze data with read_csv (readr)
 #read data. Time and concentration are factor data types, the xCELLigence parameter should be numeric - this needs to be specified on import (see code below for col_factor()). Also concentration should be.
 #na.omit() is really important for omitting any non values this will be useful later when you're producing your graph. 
 #the head() function will give you a preview of the data set in the console, but use view() to see the whole set in a separate tab
 #data is where the data frame you are working with should go
 
-data_frame <- read_csv(
-  data.csv,
-  col_types = cols(
-    `Drug Concentration` =
-    col_factor(
-      levels = c(
-        "Control", "Varying", "Concentrations",
-        "go", "here", "(make sure units are the same)"
-      )
-    ), 
-    Time = col_factor(
-      levels = c(
-        "0", "Timepoints", "go", "here", "again", "keep", "same", "units", "120", "144"
-      )
-    )
-  ), 
-  na = "null"
-)
-na.omit(data_frame)
-head(data_frame)
+loaded_data_frame <- read_csv(pathofile,
+                         col_types = cols(`Drug Concentration` = col_factor(levels = concentraion),
+                                          Time = col_factor(levels = time_hours),
+                                          `Beat Rate` = col_number()),
+                              na = "null")
+data_omit_NA <- na.omit(loaded_data_frame)
+head(data_omit_NA)
+
 
 #column names - this is a useful step to help you work with the data as your variable names could differ from this point on. It just prints your column names.
-original_col_names <- colnames(data_frame)
+original_col_names <- colnames(data_omit_NA)
 print(original_col_names)
 
 #column averages and standard error are needed to plot the baplot. you can use sd() instead of std.error to calculate standard deviation.
 #the (na.rm = TRUE) argument is really important as it excludes cells with no values out of your calculations
-BR_averages <- data_frame %>%
+BR_averages <- data_omit_NA %>%
   group_by(Time, `Drug Concentration`) %>%
   mutate(average_beat_rate = mean(`Beat Rate`, na.rm = TRUE), 
          stan_error_beat_rate = std.error(`Beat Rate`, na.rm = TRUE))
