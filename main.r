@@ -16,17 +16,17 @@ library(plotrix)
 #the head() function will give you a preview of the data set in the console, but use view() to see the whole set in a separate tab
 #data is where the data frame you are working with should go
 
-data <- read_csv(data, col_types = cols(`Drug Concentration` = col_factor(levels = c("Control", "Varying", "Concentrations", "go", "here", "(make sure units are the same)")), Time = col_factor(levels = c("0", "Timepoints", "go", "here", "again", "keep", "same", "units", "120", "144"))), na = "null")
-na.omit(data)
-head(data)
+data_frame <- read_csv(data.csv, col_types = cols(`Drug Concentration` = col_factor(levels = c("Control", "Varying", "Concentrations", "go", "here", "(make sure units are the same)")), Time = col_factor(levels = c("0", "Timepoints", "go", "here", "again", "keep", "same", "units", "120", "144"))), na = "null")
+na.omit(data_frame)
+head(data_frame)
 
 #column names - this is a useful step to help you work with the data as your variable names could differ from this point on. It just prints your column names.
-original_col_names <- colnames(data)
+original_col_names <- colnames(data_frame)
 print(original_col_names)
 
 #column averages and standard error are needed to plot the baplot. you can use sd() instead of std.error to calculate standard deviation.
 #the (na.rm = TRUE) argument is really important as it excludes cells with no values out of your calculations
-BR_averages <- data %>%
+BR_averages <- data_frame %>%
   group_by(Time, `Drug Concentration`) %>%
   mutate(average_beat_rate = mean(`Beat Rate`, na.rm = TRUE), 
          stan_error_beat_rate = std.error(`Beat Rate`, na.rm = TRUE))
