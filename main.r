@@ -11,9 +11,7 @@ library(bbplot)
 library(plotrix)
 
 #create variables for data frame, different concs, different time points - must be same variables as in excel file
-pathofile <- "Data/dataframe.csv"
-concentraion <- c("Put","each","concentration","in","individual","quotaion","(keep units the same)")
-time_hours <- c("Put", "each", "time", "point")
+pathofile <- "Data/3816 Beat rate.csv"
 
 #read and analyze data with read_csv (readr)
 #read data. Time and concentration are factor data types, the xCELLigence parameter should be numeric - this needs to be specified on import (see code below for col_factor()). Also concentration should be.
@@ -21,14 +19,18 @@ time_hours <- c("Put", "each", "time", "point")
 #the head() function will give you a preview of the data set in the console, but use view() to see the whole set in a separate tab
 #data is where the data frame you are working with should go
 
-loaded_data_frame <- read_csv(pathofile,
-                         col_types = cols(`Drug Concentration` = col_factor(levels = concentraion),
-                                          Time = col_factor(levels = time_hours),
-                                          `Beat Rate` = col_number()),
-                              na = "null")
+loaded_data_frame <- read_csv(
+  pathofile, 
+  TRUE, 
+  cols(
+    `Drug Concentration` = col_factor(levels = NULL),
+    Time = col_factor(levels = NULL),
+    `Beat Rate` = col_number(), X4 = col_skip()
+  )
+)
+
 data_omit_NA <- na.omit(loaded_data_frame)
 head(data_omit_NA)
-
 
 #column names - this is a useful step to help you work with the data as your variable names could differ from this point on. It just prints your column names.
 original_col_names <- colnames(data_omit_NA)
@@ -44,8 +46,7 @@ BR_averages <- data_omit_NA %>%
 #ggplot is used to produce a graph (explanation of each element below)
 ggplot(data = BR_averages, aes(fill = `Drug Concentration`, x = `Time`, y = average_beat_rate)) +
   geom_bar(position = 'dodge', stat='identity') +
-  scale_fill_manual(breaks = c('Control', '0.1', '1', '10', '100','1000'), 
-                    values = c('black', '#FF9999', '#FF6666', '#FF3333', '#FF0000','#990000'), 
+  scale_fill_manual(values = c('black', '#FF9999', '#FF6666', '#FF3333', '#FF0000','#990000'), 
                     name = 'Drug Concentration (nM)')+
   scale_y_continuous(expand = c(0,0), limits = c(0,40))+  
   geom_errorbar(aes(ymin=average_beat_rate-stan_error_beat_rate, 
@@ -53,7 +54,7 @@ ggplot(data = BR_averages, aes(fill = `Drug Concentration`, x = `Time`, y = aver
                 width=.2, 
                 position=position_dodge(.9)) +
   bbc_style()+
-  labs(title = 'drug/cell type', subtitle = 'what is being measured', x = 'Time (hours)', y = 'Beat Rate (BPM)') + 
+  labs(title = '3816', subtitle = 'Beat Rate over time', x = 'Time (hours)', y = 'Beat Rate (BPM)') + 
   theme(plot.subtitle = element_text(margin = ggplot2::margin(0, 1, 0, 1)), 
         axis.title = element_text(size = 16), 
         legend.title = element_text('Drug Concentration (nM)', size = 16), 
