@@ -1,6 +1,6 @@
-#analysis for xCELLigence where x axis is time and y axis xCELLIGENCE parameter e.g. beat rate 
-#this code will create a grouped barplot (it will need to be altered for anything else)
-#any imported data must be in Time|Drug/concentration|xCELLigence parameter table format
+#this code will create a grouped barplot where time is on x axis, independent variable such as concentration is fill and y axis is the dependent variable such as beat rate
+#(it will need to be altered for anything else)
+#any imported data must be in the 3 column: 'Time|Independent variable|Dependent variable' table format
 #load libraries: ggplot2, bbplot, plotrix, readr, dplyr, tidyr
 
 library(tidyverse)
@@ -10,67 +10,85 @@ library(tidyr)
 library(bbplot)
 library(plotrix)
 
-#create variables for data frame, different concs, different time points - must be same variables as in excel file
-pathofile <- "Data/3816 Beat rate.csv"
+#create variable for data frame
+pathofile <- "Data/test data.csv"
 
-#read and analyze data with read_csv (readr)
-#read data. Time and concentration are factor data types, the xCELLigence parameter should be numeric - this needs to be specified on import (see code below for col_factor()). Also concentration should be.
-#na.omit() is really important for omitting any non values this will be useful later when you're producing your graph. 
-#the head() function will give you a preview of the data set in the console, but use view() to see the whole set in a separate tab
-#data is where the data frame you are working with should go
-
+#read data frame from csv
 loaded_data_frame <- read_csv(
-  pathofile, 
-  TRUE, 
+  pathofile,
+  TRUE,
   cols(
-    `Drug Concentration` = col_factor(levels = NULL),
+    #declare data types for columns
+    `Independent variable` = col_factor(levels = NULL),
     Time = col_factor(levels = NULL),
-    `Beat Rate` = col_number(), X4 = col_skip()
+    `Dependent variable` = col_number(),
+    #an extra variable sometimes gets added so lets skip it
+    X4 = col_skip()
   )
 )
+#omit non values
+loaded_data_frame <- na.omit(loaded_data_frame)
+#head the data to view in console
+head(loaded_data_frame)
 
-data_omit_NA <- na.omit(loaded_data_frame)
-head(data_omit_NA)
+loaded_data_frame <- loaded_data_frame %>%
+  group_by(Time, `Independent variable`) %>%
+  mutate(
+    #calculate the mean of the dependent variable
+    mean_to_plot = mean(`Dependent variable`, na.rm = TRUE),
+    #calculates error bars for plot - currently set at standard error but use sd() instead to change to standard deviation
+    error_bar_to_plot = std.error(`Dependent variable`, na.rm = TRUE)
+  )
 
-#column names - this is a useful step to help you work with the data as your variable names could differ from this point on. It just prints your column names.
-original_col_names <- colnames(data_omit_NA)
-print(original_col_names)
+#ggplot is used to produce the graph + bbplot() for the aesthetics
+ggplot(data = loaded_data_frame,
+       #specifies where variables go
+       aes(fill = `Independent variable`, x = `Time`, y = mean_to_plot)) +
+  #creates grouped bar plot
+  geom_bar(position = 'dodge', stat = 'identity') +
+  #manually specifies independent variable and colour
+  scale_fill_manual(
+    values = c('black', '#FF9999', '#FF6666', '#FF3333', '#FF0000', '#990000'),
+    #specify the name of your legend here
+    name = 'Name of your legend'
+  ) +
+  #limits sets the scale of the y axis
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 40)) +
+  #puts error bars on bars
+  geom_errorbar(
+    aes(
+      ymin = mean_to_plot - error_bar_to_plot,
+      ymax = mean_to_plot + error_bar_to_plot
+    ),
+    width = .2,
+    position = position_dodge(.9)
+  ) +
+  bbc_style() +
+  #change labels on your graph
+  labs(
+    title = 'Title of your graph',
+    subtitle = 'Subtitle if required',
+    x = 'x axis title',
+    y = 'y axis title'
+  ) +
+  theme(
+    #can change size and position of subtitle
+    plot.subtitle = element_text(margin = ggplot2::margin(0, 1, 0, 1)),
+    #alters axis title
+    axis.title = element_text(size = 16),
+    #changes legend title
+    legend.title = element_text('Name of your legend', size = 16),
+    #position of legend on graph
+    legend.position = "right",
+    #changes legend text
+    legend.text = element_text(size = 14),
+    #adds x axis ticks
+    axis.ticks.x = element_line(colour = "#333333"),
+    #alters length of axis tick
+    axis.ticks.length =  unit(0.3, "cm"),
+    #alters grid lines
+    panel.grid.major.y = element_line('#cbcbcb'),
+    #adds axis lines
+    axis.line = element_line(size = 1, color = 'black')
+  )
 
-#column averages and standard error are needed to plot the baplot. you can use sd() instead of std.error to calculate standard deviation.
-#the (na.rm = TRUE) argument is really important as it excludes cells with no values out of your calculations
-BR_averages <- data_omit_NA %>%
-  group_by(Time, `Drug Concentration`) %>%
-  mutate(average_beat_rate = mean(`Beat Rate`, na.rm = TRUE), 
-         stan_error_beat_rate = std.error(`Beat Rate`, na.rm = TRUE))
-
-#ggplot is used to produce a graph (explanation of each element below)
-ggplot(data = BR_averages, aes(fill = `Drug Concentration`, x = `Time`, y = average_beat_rate)) +
-  geom_bar(position = 'dodge', stat='identity') +
-  scale_fill_manual(values = c('black', '#FF9999', '#FF6666', '#FF3333', '#FF0000','#990000'), 
-                    name = 'Drug Concentration (nM)')+
-  scale_y_continuous(expand = c(0,0), limits = c(0,40))+  
-  geom_errorbar(aes(ymin=average_beat_rate-stan_error_beat_rate, 
-                    ymax=average_beat_rate+stan_error_beat_rate), 
-                width=.2, 
-                position=position_dodge(.9)) +
-  bbc_style()+
-  labs(title = '3816', subtitle = 'Beat Rate over time', x = 'Time (hours)', y = 'Beat Rate (BPM)') + 
-  theme(plot.subtitle = element_text(margin = ggplot2::margin(0, 1, 0, 1)), 
-        axis.title = element_text(size = 16), 
-        legend.title = element_text('Drug Concentration (nM)', size = 16), 
-        legend.position = "right", 
-        legend.text = element_text(size = 14), 
-        axis.ticks.x = element_line(colour = "#333333"), 
-        axis.ticks.length =  unit(0.3, "cm"), 
-        panel.grid.major.y=element_line('#cbcbcb'), 
-        axis.line = element_line(size = 1, color = 'black'))
-
-
-#ggplot argument creates plot with data
-#geombar() creates the bar plot
-#scale_fill_manual is where you can change colour and labels. to change colours use google to find R colour codes.
-#scale_y_continuous is used to place bars on the x axis. Also determines the axis scales - DONT FORGET TO SPECIFY Y AXIS.
-#geom_error_bar is where error bars are specified 
-#bbc_style is the graphics used
-#labs is labels and this is where you can change all the labels on the chart
-#the theme argument is used to define other features of the plot - this is where most adjustments can be made if needed
