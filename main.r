@@ -15,6 +15,14 @@ library(RColorBrewer)
 pathofile <- "Data/test data.csv"
 Independent_variable <- 'This is the legend title'
 y_axis_limit <- 50
+plot_title <- "Title of your graph"
+plot_subtitle <- "Subtitle of required"
+x_axis_title <- "x axis title"
+y_axis_title <- "y axis title"
+axis_text_size <- 16
+legend_title_size <- 16
+legend_text_size <- 14
+
 
 #read data frame from csv
 loaded_data_frame <- read_csv(
@@ -74,22 +82,22 @@ ggplot(data = loaded_data_frame,
   bbc_style() +
   #change labels on your graph
   labs(
-    title = 'Title of your graph',
-    subtitle = 'Subtitle if required',
-    x = 'x axis title',
-    y = 'y axis title'
+    title = plot_title,
+    subtitle = plot_subtitle,
+    x = x_axis_title,
+    y = y_axis_title
   ) +
   theme(
     #can change size and position of subtitle
     plot.subtitle = element_text(margin = ggplot2::margin(0, 1, 0, 1)),
     #alters axis title
-    axis.title = element_text(size = 16),
+    axis.title = element_text(size = axis_text_size),
     #changes legend title
-    legend.title = element_text('Name of your legend', size = 16),
+    legend.title = element_text(size = legend_title_size),
     #position of legend on graph
     legend.position = "right",
     #changes legend text
-    legend.text = element_text(size = 14),
+    legend.text = element_text(size = legend_text_size),
     #adds x axis ticks
     axis.ticks.x = element_line(colour = "#333333"),
     #alters length of axis tick
