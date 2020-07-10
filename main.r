@@ -14,6 +14,7 @@ library(RColorBrewer)
 #create variable for data frame
 pathofile <- "Data/test data.csv"
 Independent_variable <- 'This is the legend title'
+y_axis_limit <- 50
 
 #read data frame from csv
 loaded_data_frame <- read_csv(
@@ -60,7 +61,7 @@ ggplot(data = loaded_data_frame,
     name = Independent_variable
   ) +
   #limits sets the scale of the y axis
-  scale_y_continuous(expand = c(0, 0), limits = c(0, 40)) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, y_axis_limit)) +
   #puts error bars on bars
   geom_errorbar(
     aes(
@@ -98,3 +99,4 @@ ggplot(data = loaded_data_frame,
     #adds axis lines
     axis.line = element_line(size = 1, color = 'black')
   )
+
