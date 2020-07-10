@@ -41,9 +41,10 @@ loaded_data_frame <- loaded_data_frame %>%
     error_bar_to_plot = std.error(`Dependent variable`, na.rm = TRUE)
   )
 
-
+#extracts the number of variables from Independent variables
+number_of_variables <- length(unique(loaded_data_frame[["Independent variable"]]))
 #create colour variable for colour palette
-my.cols<- brewer.pal(5, "Reds")
+my.cols<- brewer.pal(number_of_variables, "Reds")
 
 #ggplot is used to produce the graph + bbplot() for the aesthetics
 ggplot(data = loaded_data_frame,
