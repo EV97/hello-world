@@ -9,6 +9,7 @@ library(dplyr)
 library(tidyr)
 library(bbplot)
 library(plotrix)
+library(RColorBrewer)
 
 #create variable for data frame
 pathofile <- "Data/test data.csv"
@@ -40,6 +41,10 @@ loaded_data_frame <- loaded_data_frame %>%
     error_bar_to_plot = std.error(`Dependent variable`, na.rm = TRUE)
   )
 
+
+#create colour variable for colour palette
+my.cols<- brewer.pal(5, "Reds")
+
 #ggplot is used to produce the graph + bbplot() for the aesthetics
 ggplot(data = loaded_data_frame,
        #specifies where variables go
@@ -48,7 +53,7 @@ ggplot(data = loaded_data_frame,
   geom_bar(position = 'dodge', stat = 'identity') +
   #manually specifies independent variable and colour
   scale_fill_manual(
-    values = c('black', '#FF9999', '#FF6666', '#FF3333', '#FF0000', '#990000'),
+    values = c('black', my.cols),
     #specify the name of your legend here
     name = 'Name of your legend'
   ) +
