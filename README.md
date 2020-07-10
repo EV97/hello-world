@@ -2,4 +2,5 @@ Code built in R studio to analyse data from MEA platform Acea xCELLigence. Anals
 
 Ensure data is in same format as the test data set. Must be in csv format and column names must be the same. Can be changed later in the graph to match actual measurements.
 
-See png file for example of graph using the test data.
+![Example graph](/images/test image.png)
+
