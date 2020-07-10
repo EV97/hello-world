@@ -5,7 +5,7 @@
 
 #any imported data must be in the 3 column: 'Time|Independent variable|Dependent variable' table format
 
-#load libraries: ggplot2, bbplot, plotrix, readr, dplyr, tidyr
+#load libraries: ggplot2, bbplot, plotrix, readr, dplyr, tidyr, RColorBrewer
 
 
 
