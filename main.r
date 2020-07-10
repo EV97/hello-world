@@ -13,6 +13,7 @@ library(RColorBrewer)
 
 #create variable for data frame
 pathofile <- "Data/test data.csv"
+Independent_variable <- 'This is the legend title'
 
 #read data frame from csv
 loaded_data_frame <- read_csv(
@@ -44,7 +45,7 @@ loaded_data_frame <- loaded_data_frame %>%
 #extracts the number of variables from Independent variables
 number_of_variables <- length(unique(loaded_data_frame[["Independent variable"]]))
 #create colour variable for colour palette
-my.cols<- brewer.pal(number_of_variables, "Reds")
+colours_used <- brewer.pal(number_of_variables, "Reds")
 
 #ggplot is used to produce the graph + bbplot() for the aesthetics
 ggplot(data = loaded_data_frame,
@@ -54,9 +55,9 @@ ggplot(data = loaded_data_frame,
   geom_bar(position = 'dodge', stat = 'identity') +
   #manually specifies independent variable and colour
   scale_fill_manual(
-    values = c('black', my.cols),
+    values = c('black', colours_used),
     #specify the name of your legend here
-    name = 'Name of your legend'
+    name = Independent_variable
   ) +
   #limits sets the scale of the y axis
   scale_y_continuous(expand = c(0, 0), limits = c(0, 40)) +
@@ -97,4 +98,3 @@ ggplot(data = loaded_data_frame,
     #adds axis lines
     axis.line = element_line(size = 1, color = 'black')
   )
-
