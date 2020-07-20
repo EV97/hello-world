@@ -41,7 +41,7 @@ library(tcltk2)
 pathofile <- tk_choose.files(multi = TRUE)
 
 # data <- read.csv(pathofile)
-data <- read.csv(pathofile)
+#data <- read.csv(pathofile)
 
 #extracts name from .csv title
 name <- basename(pathofile)
@@ -67,10 +67,11 @@ legend_text_size <- 14
 ```{r}
 #read data frame from csv
 loaded_data_frame <- read_csv(
-  pathofile,
+  pathofile, 
   col_names = FALSE,
   #specifies column types: factor, factor, double
-  col_types = "ffd"
+  col_types = cols_only(X1 = "f", X2 = "f", X3 = "d"), 
+  skip = 1
 )
 #omit non values
 loaded_data_frame <- na.omit(loaded_data_frame)
@@ -84,14 +85,15 @@ head(loaded_data_frame)
 df_names <- read_csv(
   pathofile,
   col_names = TRUE,
-  col_types = "ffd__",
+  col_types = cols_only("f","f","d")
 )
 
 column_names <- colnames(df_names)
-print(column_names)
+
 Independent_variable_1 <- column_names[1]
 Independent_variable_2 <- column_names[2]
 Dependent_variable <- column_names[3]
+
 
 loaded_data_frame <- loaded_data_frame %>%
   group_by(X1, X2) %>%
@@ -171,5 +173,3 @@ ggplot(data = loaded_data_frame,
     #adds axis lines
     axis.line = element_line(size = 1, color = 'black')
   )
-```
-
