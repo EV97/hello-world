@@ -92,7 +92,7 @@ get_column_names <- function(path) {
   #runs though actual column names and integrates into graph
   df_names <- read_csv(path,
                        col_names = TRUE,
-                       col_types = cols_only("f", "f", "d"))
+                       col_types = cols_only("f", "f", "d", "c", "f"))
   
   column_names <- colnames(df_names)
   
@@ -146,7 +146,7 @@ get_number_of_variables <- function(data_frame) {
 ```
 
 ```{r}
-get_the_colours <- function(palette = "YlGn", number_of_variables) {
+get_the_colours <- function(palette = "YlOrRd", number_of_variables) {
   #create colour variable for colour palette
   colours_used <- brewer.pal(number_of_variables, palette )[2:9]
   return(colours_used)
@@ -214,16 +214,8 @@ get_main_plot <-
 ```
  
 ```{r}
-#freq <- hist(data_frame$X3)
-#freq
-```
- 
- 
-```{r}
 get_box_plot <- function(data_frame, titles, column_names, the_colours) {
-  #here is ANOVA stats test and Tukey multi pairwise comparison
-  #plot to create box plot showing the variance across groups
-  
+#box plot to show variation   
   box_plot <- ggboxplot(
     data_frame,
     x = "X1",
@@ -244,40 +236,21 @@ get_box_plot <- function(data_frame, titles, column_names, the_colours) {
 ```
 
 ```{r}
-get_anova <- function(data_frame) {
-  my_anova <- aov(X3 ~ X2 * X1, data = data_frame)
-  summary(my_anova)
-  
-  
-#mixed model
-#need well id
-#lme4 
-#emmeans - for post hoc
-  
-   # res.aov <- anova_test(
-  #data = data_frame, dv = data_frame$X3, wid = data_frame$X5,
-  #between = data_frame$X2, within = data_frame$X1
- # )
-#get_anova_table(res.aov)
-  
-  return(my_anova)
+get_mixed_mod <- function(data_frame) {
+#generation of mixed effects model  
+my_mixed_model <- lmer(X3~X2*X1+(1|X5), data = data_frame)
+
+  return(my_mixed_model)
 }
 ```
 
 ```{r}
-get_tukeys <- function(the_anova) {
-  #generates Tukey from the ANOVA (if significant)
-  TUKEY <- TukeyHSD(the_anova, which = "X2:X1", conf.level = 0.95)
-  
-  #shows pairwise comparison between control and each concentration for each time point
-  filtered_tukey <-tidy(TUKEY) %>% filter(grepl("\\d+:(\\d+)-Control:\\1", comparison))
-  
-  print(filtered_tukey)
-  
-  #shows only significant pairwise comparisons - uses a regex to include only control comaprisons (if you want comparisons between other groups remove the regex)
-  significant_tukey <- tidy(TUKEY) %>% filter(adj.p.value < .05 &
-                           grepl("\\d+:(\\d+)-Control:\\1", comparison))
-  return(list(filtered_tukey, significant_tukey))
+#post hoc analysis uses a mixed effects model with emmeans
+get_post_hoc <- function(my_mixed_model) {
+ 
+  post_hoc_means <- emmeans(my_mixed_model, specs = pairwise~X2|X1)
+
+ return(post_hoc_means)
 }
 ```
 
@@ -324,7 +297,7 @@ get_percentage_of_controls <- function(path) {
 
 ```{r}
 #output to powerpoint - as png
-create_pptx <- function(main_plot, box_plot, tukeys, anova, the_anova, levene_test, shapiro_wilk, percentage_of_controls, path = file.choose()) {
+create_pptx <- function(main_plot, box_plot, percentage_of_controls, path = file.choose()) {
   
   if (!file.exists(path)) {
     
@@ -335,9 +308,7 @@ create_pptx <- function(main_plot, box_plot, tukeys, anova, the_anova, levene_te
     out <- read_pptx(path)
     
   }
-  
-  
-  
+
   out %>%
     
     add_slide(layout = "Title and Content", master = "Office Theme") %>%
@@ -414,122 +385,6 @@ create_pptx <- function(main_plot, box_plot, tukeys, anova, the_anova, levene_te
     
     add_slide(layout = "Title and Content", master = "Office Theme") %>%
     
-    ph_with(value = as.data.frame(tukeys[1]),
-            
-            location = ph_location(
-              
-              left = 1,
-              
-              top = 1,
-              
-              width = 9,
-              
-              height = 5.4,
-              
-            )) %>%
-    
-    add_slide(layout = "Title and Content", master = "Office Theme") %>%
-    
-    ph_with(value = as.data.frame(tukeys[2]),
-            
-            location = ph_location(
-              
-              left = 1,
-              
-              top = 1,
-              
-              width = 9,
-              
-              height = 5.4,
-              
-            )) %>%
-    
-    add_slide(layout = "Title and Content", master = "Office Theme") %>%
-    
-    ph_with(value = anova,
-            
-            location = ph_location(
-              
-              left = 1,
-              
-              top = 1,
-              
-              width = 9,
-              
-              height = 5.4,
-              
-            )) %>%
-    
-    #homogeneity of variance
-    
-    add_slide(layout = "Title and Content", master = "Office Theme") %>%
-    
-    ph_with(value = dml(code = plot(the_anova, 1)),
-            
-            location = ph_location(
-              
-              left = 1,
-              
-              top = 1,
-              
-              width = 9,
-              
-              height = 5.4,
-              
-            )) %>%
-    
-    add_slide(layout = "Title and Content", master = "Office Theme") %>%
-    
-    ph_with(value = levene_test,
-            
-            location = ph_location(
-              
-              left = 1,
-              
-              top = 1,
-              
-              width = 9,
-              
-              height = 5.4,
-              
-            )) %>%
-    
-    #Normal Q-Q plot
-    
-    add_slide(layout = "Title and Content", master = "Office Theme") %>%
-    
-    ph_with(value = dml(code = plot(the_anova, 2)),
-            
-            location = ph_location(
-              
-              left = 1,
-              
-              top = 1,
-              
-              width = 9,
-              
-              height = 5.4,
-              
-            )) %>%
-    
-    add_slide(layout = "Title and Content", master = "Office Theme") %>%
-    
-    ph_with(value = shapiro_wilk,
-            
-            location = ph_location(
-              
-              left = 1,
-              
-              top = 1,
-              
-              width = 9,
-              
-              height = 5.4,
-              
-            )) %>%
-    
-    add_slide(layout = "Title and Content", master = "Office Theme") %>%
-    
     ph_with(value = percentage_of_controls,
             
             location = ph_location(
@@ -545,7 +400,6 @@ create_pptx <- function(main_plot, box_plot, tukeys, anova, the_anova, levene_te
             )) %>%
     
     print(target = path)
-  
 }
 ```
 
@@ -569,29 +423,11 @@ for (file in pathofiles) {
   box_plot <-
     get_box_plot(data_frame, titles, column_names, colours)
   
-  the_anova <- get_anova(data_frame)
+  the_mixed_model <- get_mixed_mod(data_frame)
+  print(the_mixed_model)
   
-  #generate ANOVA should only do post hoc tests if the value is significant
-  tukeys <- get_tukeys(the_anova)
-  print(tukeys)
-  type_3_anova <- Anova(the_anova, type = "III", singular.ok = TRUE)
-  print(type_3_anova)
-  
-  #plot for homogeneity of variance
-  homgoeneity_of_variance <- plot(the_anova, 1)
-  #levenes test for homogeneity of variance
-  levene_test <- leveneTest(X3 ~ X2 * X1, data = data_frame)
-  
-  #From the output above we can see that the p-value is not less than the significance level of 0.05. This means that there is no evidence to suggest that the variance across groups is statistically significantly different. Therefore, we can assume the homogeneity of variances in the different treatment groups.
-  
-  #Normal Q-Q plot
-  qq_plot <- plot(the_anova, 2)
-  
-  # Extract the residuals
-  aov_residuals <- residuals(object = the_anova)
-  # Run Shapiro-Wilk test
-  shapiro_wilk <- as_flextable(shapiro.test(x = aov_residuals))
-  
+  the_post_hoc <- get_post_hoc(the_mixed_model)
+  print(the_post_hoc)
   
   percentage_of_controls <- get_percentage_of_controls(file)
   
@@ -599,15 +435,8 @@ for (file in pathofiles) {
   create_pptx(
     main_plot,
     box_plot,
-    tukeys,
-    type_3_anova,
-    the_anova,
-    levene_test,
-    shapiro_wilk,
     percentage_of_controls,
     paste(titles['title'], '.pptx')
   )
-
-  
 }
 ```
