@@ -1,0 +1,55 @@
+---
+title: "CodeForLizzy"
+author: "Jasmine Sadler"
+date: "13/07/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r}
+#Function to create a ggplot curve obejct. The object is a list. If you add it to a ggplot it adds the curve
+scurve.plot<-function(top=1,bottom=0,slope=-1,xc50=1){
+  list(stat_function(fun=scurve4,args=list(top=top,bottom=bottom,slope=slope,xc50=xc50)))
+}
+```
+
+```{r}
+#Function to plot any curve that you already have the top, bottom and curve for
+#Specific to my work so adjust as needed
+plot_curves <- function(compound="haloperidol",measurement="Count_Healthy", wells, curves){
+#Data setup  
+  welldata<-subset(wells,`Compound ID`==compound & Measurement==measurement)  
+  curvedata<-subset(curves,`Compound ID`==compound & Measurement==measurement) 
+  
+  measurement <-  gsub("MitoClass", "", measurement)
+  measurement <-  gsub("PLDClass", "", measurement)
+  measurement <-  gsub("Fraction", "", measurement)
+  compound <-gsub(" _.*", "", compound)
+  title<-paste(compound,measurement)
+#Define curve parameters
+  top=curvedata$S0
+  bottom=curvedata$Sinf
+  slope=curvedata$nHill
+  xc50=curvedata$`qAC50 [M]`
+  slope<--slope
+  yintercept<-median(welldata$Normalized)
+  data.mode<-as.character(curvedata$`Data Mode`)
+  
+  
+#Build plot
+#Different options for different types of plot (i.e, inactive/active curves)
+  IC50plot <- ggplot(data = welldata, mapping = aes(x=log10(`Conc.Molar`), y = Normalized ))+geom_point(aes(color=Masked)) +scale_color_manual(values=c("black","darkgrey")) +labs(title=title,x="Log Concentration [M]",y="Value")+theme(legend.position = "none")
+  
+  IC50plot<-case_when(data.mode %in% c("inactive","undefined") ~list(IC50plot+geom_hline(yintercept = yintercept,alpha=0.5,colour="firebrick",linetype="dashed",size=1)+coord_cartesian(ylim=c(-120,50))),
+                      
+                      !data.mode%in% c("inactive","undefined") ~list(IC50plot+stat_function(fun=scurve4,args=list(top=top,bottom=bottom,slope=slope,xc50=xc50),geom="line",colour="firebrick", size=1)+coord_cartesian(ylim=c(-100,100))),TRUE~list(IC50plot))
+  
+  IC50plot2 <- IC50plot[[1]]
+  return(IC50plot2)
+}
+```
+
